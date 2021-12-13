@@ -1,6 +1,6 @@
 import { Client } from "pg"
 import express from "express"
-
+import cors from "cors"
 
 const app = express()
 
@@ -12,25 +12,36 @@ const client = new Client({
     database: "test_db",
 })
 
-async function PullData() {
-    client.connect()
-    client.query(`SELECT * FROM users`, (err, res) => {
-        if (res) {
-            console.log(res.rows)
-        }
-        else if (err) {
-            console.log(err)
-        }
-        else {
-            console.log("wtf?")
-        }
-    })
-}
+client.connect()
 
-PullData()
+app.use(cors({origin: "*"}))
+app.use(express.json())
 
-// const PORT = process.env.PORT || 3000
+app.get("/api/data", async (req,res) => {
+    client.query(`select * from notes`, (err, data) => {
+        if (err) {
+            return res.status(503).send({error:"There was an error on the server"})
+        }
+        res.send(data.rows)
+    })    
+})  
 
-// app.listen(PORT, () => console.log("Listening on " + PORT))
+app.post("/api/data", async (req,res) => {
+    const { text } = req.body 
+
+
+    const query = `insert into notes (text)
+                    values ('${text}') returning id, text;`
+    client.query(query, (err, data) => {
+        if (err) {
+            return res.status(503).send({error:"There was an error on the server"})
+        }
+        res.send(data.rows)
+    })    
+})  
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => console.log("Listening on " + PORT))
 
 
