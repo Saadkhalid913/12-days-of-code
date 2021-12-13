@@ -31,7 +31,6 @@ app.delete("/api/data/:id", async (req,res) => {
         if (err) {
             return res.status(503).send({error:"There was an error on the server"})
         }
-        console.log("Deleted item at id#" + id)
         return res.send(data.rows)
         
     })    
