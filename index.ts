@@ -25,10 +25,21 @@ app.get("/api/data", async (req,res) => {
         res.send(data.rows)
     })    
 })  
+app.delete("/api/data/:id", async (req,res) => {
+    const {id} = req.params
+    client.query(`delete from notes where id=${id} returning id, text`, (err, data) => {
+        if (err) {
+            return res.status(503).send({error:"There was an error on the server"})
+        }
+        console.log("Deleted item at id#" + id)
+        return res.send(data.rows)
+        
+    })    
+})  
+
 
 app.post("/api/data", async (req,res) => {
     const { text } = req.body 
-
 
     const query = `insert into notes (text)
                     values ('${text}') returning id, text;`
